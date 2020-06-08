@@ -1,0 +1,54 @@
+service: appd-lambda
+
+provider:
+  name: aws
+  runtime: nodejs10.x
+
+  # you can overwrite defaults here
+  stage: dev
+  region: us-west-2
+  environment:
+    CANDIDATE_TABLE: ${self:service}-${opt:stage, self:provider.stage}
+    CANDIDATE_EMAIL_TABLE: "candidate-email-${opt:stage, self:provider.stage}"
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:Query
+        - dynamodb:Scan
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - lambda:InvokeFunction
+      Resource: "*"
+
+resources:
+  Resources:
+    CandidatesDynamoDbTable:
+      Type: "AWS::DynamoDB::Table"
+      DeletionPolicy: Delete
+      Properties:
+        AttributeDefinitions:
+          - AttributeName: "id"
+            AttributeType: "S"
+        KeySchema:
+          - AttributeName: "id"
+            KeyType: "HASH"
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+        StreamSpecification:
+          StreamViewType: "NEW_AND_OLD_IMAGES"
+        TableName: ${self:provider.environment.CANDIDATE_TABLE}
+
+functions:
+  nodejs-lambda-1:
+    handler: handler.doFunctionAsync
+    description: Sample Lambda function in NodeJS for AppD Lambda Instrumentation
+    memorySize: 128
+    events:
+      - http:
+          path: /{proxy+}
+          method: any
+  nodejs-lambda-2:
+    handler: handler.doFunctionAsync2
+    description: Second sample Lambda function
+    memorySize: 128
