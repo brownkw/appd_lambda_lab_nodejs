@@ -1,15 +1,24 @@
+const secret_mgr = require('./secrets-manager.js');
+var controller_info = "";
+
+(async () => {
+    var data = await secret_mgr.get_secret();
+    controller_info = JSON.parse(data);
+})();
+
+const AWS = require('aws-sdk');
+
 // TODO: Add in call to require AppDynamics Tracer
+
+// TODO: init tracer
 
 const _ = require('lodash');
 const util = require('util');
-const AWS = require('aws-sdk');
 const { v4: uuidv4 } = require('uuid');
 const faker = require('faker');
 
 const doStuff = util.promisify(setTimeout);
 const dynamoDb = new AWS.DynamoDB.DocumentClient();
-
-// TODO: init tracer
 
 module.exports.doFunctionAsync = async (event, context) => {
 
@@ -50,8 +59,8 @@ module.exports.doFunctionAsync = async (event, context) => {
         var ms = _.random(50, 500);
         await doStuff(ms);
 
-        response.body = JSON.stringify({
-            message: 'Hello AppDynamics Lambda Monitoring - Async JS handler from ' + event.path
+        response.body = JSON.stringify({            
+            message: 'Hello AppDynamics Lambda Monitoring - Async JS handler from ' + event.path + ". "            
         });
     }
 
