@@ -1,4 +1,4 @@
-service: appd-lambda
+service: appd-lambda-nodejs
 
 provider:
   name: aws
@@ -10,6 +10,13 @@ provider:
   environment:
     CANDIDATE_TABLE: ${self:service}-${opt:stage, self:provider.stage}
     CANDIDATE_EMAIL_TABLE: "candidate-email-${opt:stage, self:provider.stage}"
+    APPDYNAMICS_ACCOUNT_NAME: ""
+    APPDYNAMICS_APPLICATION_NAME: ""
+    APPDYNAMICS_CONTROLLER_HOST: ""
+    APPDYNAMICS_SERVERLESS_API_ENDPOINT: ""
+    APPDYNAMICS_CONTROLLER_PORT: 443
+    APPDYNAMICS_LOG_LEVEL: ""    
+
   iamRoleStatements:
     - Effect: Allow
       Action:
@@ -18,6 +25,7 @@ provider:
         - dynamodb:GetItem
         - dynamodb:PutItem
         - lambda:InvokeFunction
+        - secretsmanager:GetSecretValue
       Resource: "*"
 
 resources:
@@ -40,15 +48,16 @@ resources:
         TableName: ${self:provider.environment.CANDIDATE_TABLE}
 
 functions:
-  nodejs-lambda-1:
+  lambda-1:
     handler: handler.doFunctionAsync
     description: Sample Lambda function in NodeJS for AppD Lambda Instrumentation
     memorySize: 128
     events:
       - http:
           path: /{proxy+}
-          method: any
-  nodejs-lambda-2:
+          method: any    
+
+  lambda-2:
     handler: handler.doFunctionAsync2
     description: Second sample Lambda function
     memorySize: 128

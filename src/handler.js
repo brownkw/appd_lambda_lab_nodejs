@@ -31,36 +31,55 @@ module.exports.doFunctionAsync = async (event, context) => {
         var person = personInfo();
 
         try {
-            var result = await submitPerson(person);
-            response.body = JSON.stringify(person);
+            var person_result = await submitPerson(person);
+            var result = {
+                status : "PersonCreated",
+                data : person
+            };
+
+            response.body = JSON.stringify(result);
             response.statusCode = 201;
         } catch (e) {
             response.statusCode = 500;
-            response.body = JSON.stringify(e);
+            var result = {
+                status : "Error",
+                data : e
+            };
+            response.body = JSON.stringify(result);
         }
 
     } else if (event.path == "/person/random") {
         const lambda = new AWS.Lambda();
 
         var params = {
-            FunctionName: "appd-lambda-dev-nodejs-lambda-2",
+            FunctionName: context.functionName.replace("lambda-1", "lambda-2"),
             InvocationType: "RequestResponse",
             Payload: '{}'
         };
 
         try {
             var lambda_resp = await lambda.invoke(params).promise();
-            response.body = JSON.stringify(JSON.parse(lambda_resp.Payload).Item);
+            var data = JSON.parse(lambda_resp.Payload);
+            var result = {
+                status : "Found",
+                data : data.Item
+            }
+            response.body = JSON.stringify(result);
         } catch (e) {
             response.statusCode = 500;
-            response.body = JSON.stringify(e);
+            var result = {
+                status : "Error",
+                data : e
+            };
+            response.body = JSON.stringify(result);
         }
     } else {
         var ms = _.random(50, 500);
         await doStuff(ms);
 
         response.body = JSON.stringify({            
-            message: 'Hello AppDynamics Lambda Monitoring - Async JS handler from ' + event.path + ". "            
+            status: 'Hello AppDynamics Lambda Monitoring - Async JS handler from ' + event.path + ". ",
+            data: context            
         });
     }
 
