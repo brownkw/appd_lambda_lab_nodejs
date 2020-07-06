@@ -29,8 +29,11 @@ module.exports.doFunctionAsync = async (event, context) => {
 
     if (event.path == "/person/submit") {
         var person = personInfo();
+        // TODO: Add in exit call creation for DynamoDB
 
         try {
+            
+
             var person_result = await submitPerson(person);
             var result = {
                 status : "PersonCreated",
@@ -39,14 +42,21 @@ module.exports.doFunctionAsync = async (event, context) => {
 
             response.body = JSON.stringify(result);
             response.statusCode = 201;
-        } catch (e) {
+
+            
+        } catch (e) {            
+            // TODO: Add in error reporting for exit call
+
             response.statusCode = 500;
             var result = {
                 status : "Error",
                 data : e
             };
             response.body = JSON.stringify(result);
+
+
         }
+        // TODO: End exit call
 
     } else if (event.path == "/person/random") {
         const lambda = new AWS.Lambda();
@@ -91,10 +101,15 @@ module.exports.doFunctionAsync2 = async (event, context) => {
 
     var id_results, ids, id;
 
-    // TODO: Add exit call
+    // TODO: Add exit call to DynamoDB
+
     try {
         id_results = await getPersonIds();
     } catch (e) {
+        // TODO: Report exit call error
+
+        // TODO: End exit call
+
         context.fail(e);
     }
 
@@ -103,13 +118,23 @@ module.exports.doFunctionAsync2 = async (event, context) => {
     }).value();
 
     
+
     id = ids[_.random(ids.length - 1)];
 
-    // TODO: Add exit call
+    // TODO: Add exit call to DynamoDB
+
     try {
         var person = await getPerson(id);
+
+        // TODO: End exit call
+
         context.succeed(person);
     } catch (e) {
+
+        // TODO: Report exit call error
+
+        // TODO: End exit call
+        
         context.fail(e);
     }
 };

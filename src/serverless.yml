@@ -8,6 +8,7 @@ provider:
   stage: dev
   region: us-west-2
   environment:
+    AWS_REGION_STR: ${opt:region, self:provider.region}
     CANDIDATE_TABLE: ${self:service}-${opt:stage, self:provider.stage}
     CANDIDATE_EMAIL_TABLE: "candidate-email-${opt:stage, self:provider.stage}"
     APPDYNAMICS_ACCOUNT_NAME: ""

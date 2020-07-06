@@ -1,7 +1,7 @@
 const AWS = require('aws-sdk');
 
 // Getting the controller key
-const secrets_client = new AWS.SecretsManager({ region: 'us-west-2'});
+const secrets_client = new AWS.SecretsManager({ region: process.env.AWS_REGION_STR });
 
 const get_secret = async function () {
     var secretName = "aws-sandbox/controller-key";
