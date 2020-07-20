@@ -9,9 +9,12 @@ var controller_info = "";
 const AWS = require('aws-sdk');
 
 // TODO: Add in call to require AppDynamics Tracer
+const tracer = require('appdynamics-lambda-tracer');
 
 // TODO: init tracer
+tracer.init();
 
+// Other requirements
 const _ = require('lodash');
 const util = require('util');
 const { v4: uuidv4 } = require('uuid');
@@ -20,6 +23,7 @@ const faker = require('faker');
 const doStuff = util.promisify(setTimeout);
 const dynamoDb = new AWS.DynamoDB.DocumentClient();
 
+// First lambda function
 module.exports.doFunctionAsync = async (event, context) => {
 
     const response = {
@@ -29,11 +33,18 @@ module.exports.doFunctionAsync = async (event, context) => {
 
     if (event.path == "/person/submit") {
         var person = personInfo();
+        
         // TODO: Add in exit call creation for DynamoDB
+        var exitCall = tracer.startExitCall({
+            exitType: 'CUSTOM',
+            exitSubType: 'AMAZON WEB SERVICES',
+            identifyingProperties: {
+                'VENDOR': process.env.CANDIDATE_TABLE + " DynamoDB"
+            }
+        });
 
         try {
             
-
             var person_result = await submitPerson(person);
             var result = {
                 status : "PersonCreated",
@@ -42,10 +53,10 @@ module.exports.doFunctionAsync = async (event, context) => {
 
             response.body = JSON.stringify(result);
             response.statusCode = 201;
-
             
         } catch (e) {            
             // TODO: Add in error reporting for exit call
+            tracer.reportExitCallError(exitCall, 'DynamoDB Error', 'Error in making the DynamoDB query for submitting person');
 
             response.statusCode = 500;
             var result = {
@@ -54,9 +65,10 @@ module.exports.doFunctionAsync = async (event, context) => {
             };
             response.body = JSON.stringify(result);
 
-
         }
+
         // TODO: End exit call
+        tracer.stopExitCall(exitCall);
 
     } else if (event.path == "/person/random") {
         const lambda = new AWS.Lambda();
@@ -66,6 +78,9 @@ module.exports.doFunctionAsync = async (event, context) => {
             InvocationType: "RequestResponse",
             Payload: '{}'
         };
+
+        // NOTE: With the NodeJS tracer, we do not have to manually set up exit calls to 
+        // other Lambda functions as we do with the Java tracer.
 
         try {
             var lambda_resp = await lambda.invoke(params).promise();
@@ -97,46 +112,55 @@ module.exports.doFunctionAsync = async (event, context) => {
     return response;
 };
 
+// Second lambda function
 module.exports.doFunctionAsync2 = async (event, context) => {
 
     var id_results, ids, id;
 
     // TODO: Add exit call to DynamoDB
+    var exitCall = tracer.startExitCall({
+        exitType: 'CUSTOM',
+        exitSubType: 'AMAZON WEB SERVICES',
+        identifyingProperties: {
+            'VENDOR': process.env.CANDIDATE_TABLE + " DynamoDB"
+        }
+    });
 
     try {
         id_results = await getPersonIds();
-    } catch (e) {
-        // TODO: Report exit call error
-
-        // TODO: End exit call
-
-        context.fail(e);
-    }
-
-    ids = _(id_results.Items).map(function (i) {
-        return i.id;
-    }).value();
-
+        ids = _(id_results.Items).map(function (i) {
+            return i.id;
+        }).value();
     
-
-    id = ids[_.random(ids.length - 1)];
-
-    // TODO: Add exit call to DynamoDB
-
-    try {
-        var person = await getPerson(id);
-
-        // TODO: End exit call
-
-        context.succeed(person);
+        id = ids[_.random(ids.length - 1)];        
+    
+        try {
+            var person = await getPerson(id);
+    
+            // TODO: End exit call
+            tracer.stopExitCall(exitCall);
+    
+            context.succeed(person);
+        } catch (e2) {
+    
+            // TODO: Report exit call error
+            tracer.reportExitCallError(exitCall, 'DynamoDB Error', 'Error in making the DynamoDB query for retrieving person');
+    
+            // TODO: End exit call
+            tracer.stopExitCall(exitCall);
+            
+            context.fail(e2);
+        }
     } catch (e) {
-
         // TODO: Report exit call error
+        tracer.reportExitCallError(exitCall, 'DynamoDB Error', 'Error in making the DynamoDB query for retrieving person set');
 
         // TODO: End exit call
-        
+        tracer.stopExitCall(exitCall);
+
         context.fail(e);
     }
+    
 };
 
 const getPersonIds = () => {
@@ -179,3 +203,4 @@ const personInfo = () => {
 };
 
 // TODO: Add call to tracer main module
+tracer.mainModule(module);
