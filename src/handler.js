@@ -1,24 +1,41 @@
-const secret_mgr = require('./secrets-manager.js');
-var controller_info = "";
-
-(async () => {
-    var data = await secret_mgr.get_secret();
-    controller_info = JSON.parse(data);
-})();
-
-const AWS = require('aws-sdk');
-
+// const secret_mgr = require('./secrets-manager.js');
 // TODO: Add in call to require AppDynamics Tracer
 const tracer = require('appdynamics-lambda-tracer');
-
 // TODO: init tracer
 tracer.init();
+// var controller_info = "";
+
+// (async () => {
+//     var data = await secret_mgr.get_secret();
+//     controller_info = JSON.parse(data);
+//     console.log(JSON.stringify(controller_info));
+
+//     // TODO: init tracer
+//     tracer.init({
+//         accountName: controller_info['aws-sandbox-controller-account'],
+//         accountAccessKey: controller_info['aws-sandbox-controller-key'],
+//         applicationName: process.env.APPDYNAMICS_APPLICATION_NAME,
+//         controllerHostName: process.env.APPDYNAMICS_CONTROLLER_HOST,
+//         controllerPort: process.env.APPDYNAMICS_CONTROLLER_PORT,
+//         tierName: process.env.APPDYNAMICS_TIER_NAME,
+//         serverlessApiEndpoint: process.env.APPDYNAMICS_SERVERLESS_API_ENDPOINT,
+//         debug: true
+//     });
+
+//     // TODO: Add call to tracer main module
+//     tracer.mainModule(module);
+
+//     // console.log(tracer);
+// })();
+
+const AWS = require('aws-sdk');
 
 // Other requirements
 const _ = require('lodash');
 const util = require('util');
 const { v4: uuidv4 } = require('uuid');
 const faker = require('faker');
+const { exit } = require('process');
 
 const doStuff = util.promisify(setTimeout);
 const dynamoDb = new AWS.DynamoDB.DocumentClient();
@@ -33,42 +50,49 @@ module.exports.doFunctionAsync = async (event, context) => {
 
     if (event.path == "/person/submit") {
         var person = personInfo();
-        
+
         // TODO: Add in exit call creation for DynamoDB
-        var exitCall = tracer.startExitCall({
-            exitType: 'CUSTOM',
-            exitSubType: 'AMAZON WEB SERVICES',
-            identifyingProperties: {
-                'VENDOR': process.env.CANDIDATE_TABLE + " DynamoDB"
-            }
-        });
+        var exitCall = null; 
+        if (tracer != null) {
+            exitCall = tracer.startExitCall({
+                exitType: 'CUSTOM',
+                exitSubType: 'Amazon Web Services',
+                identifyingProperties: {
+                    'VENDOR': process.env.CANDIDATE_TABLE + " DynamoDB"
+                }
+            });
+        }
 
         try {
-            
+
             var person_result = await submitPerson(person);
             var result = {
-                status : "PersonCreated",
-                data : person
+                status: "PersonCreated",
+                data: person
             };
 
             response.body = JSON.stringify(result);
             response.statusCode = 201;
-            
-        } catch (e) {            
+
+        } catch (e) {
             // TODO: Add in error reporting for exit call
-            tracer.reportExitCallError(exitCall, 'DynamoDB Error', 'Error in making the DynamoDB query for submitting person');
+            if (tracer != null && exitCall != null) {
+                tracer.reportExitCallError(exitCall, 'DynamoDB Error', 'Error in making the DynamoDB query for submitting person');
+            }
 
             response.statusCode = 500;
             var result = {
-                status : "Error",
-                data : e
+                status: "Error",
+                data: e
             };
             response.body = JSON.stringify(result);
 
         }
 
         // TODO: End exit call
-        tracer.stopExitCall(exitCall);
+        if (tracer != null && exitCall != null) {
+            tracer.stopExitCall(exitCall);
+        }
 
     } else if (event.path == "/person/random") {
         const lambda = new AWS.Lambda();
@@ -86,15 +110,15 @@ module.exports.doFunctionAsync = async (event, context) => {
             var lambda_resp = await lambda.invoke(params).promise();
             var data = JSON.parse(lambda_resp.Payload);
             var result = {
-                status : "Found",
-                data : data.Item
+                status: "Found",
+                data: data.Item
             }
             response.body = JSON.stringify(result);
         } catch (e) {
             response.statusCode = 500;
             var result = {
-                status : "Error",
-                data : e
+                status: "Error",
+                data: e
             };
             response.body = JSON.stringify(result);
         }
@@ -102,9 +126,9 @@ module.exports.doFunctionAsync = async (event, context) => {
         var ms = _.random(50, 500);
         await doStuff(ms);
 
-        response.body = JSON.stringify({            
+        response.body = JSON.stringify({
             status: 'Hello AppDynamics Lambda Monitoring - Async JS handler from ' + event.path + ". ",
-            data: context            
+            data: context
         });
     }
 
@@ -118,37 +142,46 @@ module.exports.doFunctionAsync2 = async (event, context) => {
     var id_results, ids, id;
 
     // TODO: Add exit call to DynamoDB
-    var exitCall = tracer.startExitCall({
-        exitType: 'CUSTOM',
-        exitSubType: 'AMAZON WEB SERVICES',
-        identifyingProperties: {
-            'VENDOR': process.env.CANDIDATE_TABLE + " DynamoDB"
-        }
-    });
+    var exitCall = null;
+    if (tracer != null) {
+        exitCall = tracer.startExitCall({
+            exitType: 'CUSTOM',
+            exitSubType: 'Amazon Web Services',
+            identifyingProperties: {
+                'VENDOR': process.env.CANDIDATE_TABLE + " DynamoDB"
+            }
+        });
+    }
 
     try {
         id_results = await getPersonIds();
         ids = _(id_results.Items).map(function (i) {
             return i.id;
         }).value();
-    
-        id = ids[_.random(ids.length - 1)];        
-    
+
+        id = ids[_.random(ids.length - 1)];
+
         try {
             var person = await getPerson(id);
-    
+
             // TODO: End exit call
-            tracer.stopExitCall(exitCall);
-    
+            if (tracer != null && exitCall != null) {
+                tracer.stopExitCall(exitCall);
+            }
+
             context.succeed(person);
         } catch (e2) {
-    
+
             // TODO: Report exit call error
-            tracer.reportExitCallError(exitCall, 'DynamoDB Error', 'Error in making the DynamoDB query for retrieving person');
-    
+            if (tracer != null && exitCall != null) {
+                tracer.reportExitCallError(exitCall, 'DynamoDB Error', 'Error in making the DynamoDB query for retrieving person');
+            }
+
             // TODO: End exit call
-            tracer.stopExitCall(exitCall);
-            
+            if (tracer != null && exitCall != null) {
+                tracer.stopExitCall(exitCall);
+            }
+
             context.fail(e2);
         }
     } catch (e) {
@@ -160,7 +193,7 @@ module.exports.doFunctionAsync2 = async (event, context) => {
 
         context.fail(e);
     }
-    
+
 };
 
 const getPersonIds = () => {
@@ -202,5 +235,4 @@ const personInfo = () => {
     return retval;
 };
 
-// TODO: Add call to tracer main module
 tracer.mainModule(module);

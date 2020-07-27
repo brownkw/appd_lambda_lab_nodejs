@@ -16,9 +16,11 @@ const get_secret = async function () {
         // Depending on whether the secret is a string or binary, one of these fields will be populated.
         if ('SecretString' in data) {
             retval = data.SecretString;
+            console.log(retval);
         } else {
             var buff = new Buffer(data.SecretBinary, 'base64');
             retval = buff.toString('ascii');
+            console.log(retval);
         }
     } catch (err) {
         console.log("Error: " + JSON.stringify(err));

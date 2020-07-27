@@ -11,12 +11,13 @@ provider:
     AWS_REGION_STR: ${opt:region, self:provider.region}
     CANDIDATE_TABLE: ${self:service}-${opt:stage, self:provider.stage}
     CANDIDATE_EMAIL_TABLE: "candidate-email-${opt:stage, self:provider.stage}"
-    APPDYNAMICS_ACCOUNT_NAME: ""
-    APPDYNAMICS_APPLICATION_NAME: ""
-    APPDYNAMICS_CONTROLLER_HOST: ""
-    APPDYNAMICS_SERVERLESS_API_ENDPOINT: ""
-    APPDYNAMICS_CONTROLLER_PORT: 443
-    APPDYNAMICS_LOG_LEVEL: ""    
+    APPDYNAMICS_ACCOUNT_NAME: "aws-sandbox"
+    APPDYNAMICS_AGENT_ACCOUNT_ACCESS_KEY: "9ayhsaoe096t"
+    APPDYNAMICS_APPLICATION_NAME: "WayneLambdaTest"
+    APPDYNAMICS_CONTROLLER_HOST: "aws-sandbox.saas.appdynamics.com"
+    APPDYNAMICS_SERVERLESS_API_ENDPOINT: "https://pdx-sls-agent-api.saas.appdynamics.com"
+    APPDYNAMICS_CONTROLLER_PORT: 443    
+    APPDYNAMICS_LOG_LEVEL: "DEBUG"    
 
   iamRoleStatements:
     - Effect: Allow
@@ -52,7 +53,10 @@ functions:
   lambda-1:
     handler: handler.doFunctionAsync
     description: Sample Lambda function in NodeJS for AppD Lambda Instrumentation
-    memorySize: 128
+    memorySize: 256
+    timeout: 30
+    environment:
+      APPDYNAMICS_TIER_NAME: ${self:service}-lambda-1
     events:
       - http:
           path: /{proxy+}
@@ -61,4 +65,7 @@ functions:
   lambda-2:
     handler: handler.doFunctionAsync2
     description: Second sample Lambda function
-    memorySize: 128
+    memorySize: 256
+    timeout: 30
+    environment:
+      APPDYNAMICS_TIER_NAME: ${self:service}-lambda-2
