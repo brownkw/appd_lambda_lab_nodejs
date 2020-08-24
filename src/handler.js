@@ -212,4 +212,5 @@ const personInfo = () => {
     return retval;
 };
 
+// Add wrapper for tracer around module.
 tracer.mainModule(module);
