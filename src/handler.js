@@ -1,32 +1,9 @@
 // const secret_mgr = require('./secrets-manager.js');
 // TODO: Add in call to require AppDynamics Tracer
 const tracer = require('appdynamics-lambda-tracer');
+
 // TODO: init tracer
 tracer.init();
-// var controller_info = "";
-
-// (async () => {
-//     var data = await secret_mgr.get_secret();
-//     controller_info = JSON.parse(data);
-//     console.log(JSON.stringify(controller_info));
-
-//     // TODO: init tracer
-//     tracer.init({
-//         accountName: controller_info['aws-sandbox-controller-account'],
-//         accountAccessKey: controller_info['aws-sandbox-controller-key'],
-//         applicationName: process.env.APPDYNAMICS_APPLICATION_NAME,
-//         controllerHostName: process.env.APPDYNAMICS_CONTROLLER_HOST,
-//         controllerPort: process.env.APPDYNAMICS_CONTROLLER_PORT,
-//         tierName: process.env.APPDYNAMICS_TIER_NAME,
-//         serverlessApiEndpoint: process.env.APPDYNAMICS_SERVERLESS_API_ENDPOINT,
-//         debug: true
-//     });
-
-//     // TODO: Add call to tracer main module
-//     tracer.mainModule(module);
-
-//     // console.log(tracer);
-// })();
 
 const AWS = require('aws-sdk');
 
