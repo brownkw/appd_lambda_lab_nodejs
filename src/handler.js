@@ -1,17 +1,8 @@
-const secret_mgr = require('./secrets-manager.js');
-var controller_info = "";
-
-(async () => {
-    var data = await secret_mgr.get_secret();
-    controller_info = JSON.parse(data);
-})();
-
-const AWS = require('aws-sdk');
-
 // TODO: Add in call to require AppDynamics Tracer
 
 // TODO: init tracer
 
+const AWS = require('aws-sdk');
 const _ = require('lodash');
 const util = require('util');
 const { v4: uuidv4 } = require('uuid');
