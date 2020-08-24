@@ -104,6 +104,8 @@ module.exports.doFunctionAsync2 = async (event, context) => {
         context.fail(e);
     }
 
+    // TODO: End exit call 
+
     ids = _(id_results.Items).map(function (i) {
         return i.id;
     }).value();
@@ -170,3 +172,4 @@ const personInfo = () => {
 };
 
 // TODO: Add call to tracer main module
+    
