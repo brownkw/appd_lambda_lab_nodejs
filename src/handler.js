@@ -20,7 +20,7 @@ module.exports.doFunctionAsync = async (event, context) => {
 
     if (event.path == "/person/submit") {
         var person = personInfo();
-        // TODO: Add in exit call creation for DynamoDB
+        // TODO: Add in first exit call creation for DynamoDB
 
         try {
             
@@ -36,7 +36,7 @@ module.exports.doFunctionAsync = async (event, context) => {
 
             
         } catch (e) {            
-            // TODO: Add in error reporting for exit call
+            // TODO: Add in first error reporting for exit call
 
             response.statusCode = 500;
             var result = {
@@ -47,7 +47,7 @@ module.exports.doFunctionAsync = async (event, context) => {
 
 
         }
-        // TODO: End exit call
+        // TODO: End first exit call
 
     } else if (event.path == "/person/random") {
         const lambda = new AWS.Lambda();
@@ -92,19 +92,19 @@ module.exports.doFunctionAsync2 = async (event, context) => {
 
     var id_results, ids, id;
 
-    // TODO: Add exit call to DynamoDB
+    // TODO: Add second exit call to DynamoDB
 
     try {
         id_results = await getPersonIds();
     } catch (e) {
-        // TODO: Report exit call error
+        // TODO: Report second exit call error
 
-        // TODO: End exit call
+        // TODO: End second exit call
 
         context.fail(e);
     }
 
-    // TODO: End exit call 
+    // TODO: End second exit call 
 
     ids = _(id_results.Items).map(function (i) {
         return i.id;
