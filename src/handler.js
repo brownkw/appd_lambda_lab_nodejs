@@ -28,7 +28,7 @@ module.exports.doFunctionAsync = async (event, context) => {
     if (event.path == "/person/submit") {
         var person = personInfo();
 
-        // TODO: Add in exit call creation for DynamoDB
+        // TODO: Add in first exit call creation for DynamoDB
         var exitCall = null; 
         if (tracer != null) {
             exitCall = tracer.startExitCall({
@@ -52,7 +52,7 @@ module.exports.doFunctionAsync = async (event, context) => {
             response.statusCode = 201;
 
         } catch (e) {
-            // TODO: Add in error reporting for exit call
+            // TODO: Add in error reporting for first exit call
             if (tracer != null && exitCall != null) {
                 tracer.reportExitCallError(exitCall, 'DynamoDB Error', 'Error in making the DynamoDB query for submitting person');
             }
@@ -66,7 +66,7 @@ module.exports.doFunctionAsync = async (event, context) => {
 
         }
 
-        // TODO: End exit call
+        // TODO: End first exit call
         if (tracer != null && exitCall != null) {
             tracer.stopExitCall(exitCall);
         }
@@ -118,7 +118,7 @@ module.exports.doFunctionAsync2 = async (event, context) => {
 
     var id_results, ids, id;
 
-    // TODO: Add exit call to DynamoDB
+    // TODO: Add second exit call to DynamoDB
     var exitCall = null;
     if (tracer != null) {
         exitCall = tracer.startExitCall({
@@ -141,7 +141,7 @@ module.exports.doFunctionAsync2 = async (event, context) => {
         try {
             var person = await getPerson(id);
 
-            // TODO: End exit call
+            // TODO: End second exit call
             if (tracer != null && exitCall != null) {
                 tracer.stopExitCall(exitCall);
             }
@@ -149,12 +149,12 @@ module.exports.doFunctionAsync2 = async (event, context) => {
             context.succeed(person);
         } catch (e2) {
 
-            // TODO: Report exit call error
+            // TODO: Report second exit call error
             if (tracer != null && exitCall != null) {
                 tracer.reportExitCallError(exitCall, 'DynamoDB Error', 'Error in making the DynamoDB query for retrieving person');
             }
 
-            // TODO: End exit call
+            // TODO: End second exit call
             if (tracer != null && exitCall != null) {
                 tracer.stopExitCall(exitCall);
             }
@@ -162,10 +162,10 @@ module.exports.doFunctionAsync2 = async (event, context) => {
             context.fail(e2);
         }
     } catch (e) {
-        // TODO: Report exit call error
+        // TODO: Report second exit call error
         tracer.reportExitCallError(exitCall, 'DynamoDB Error', 'Error in making the DynamoDB query for retrieving person set');
 
-        // TODO: End exit call
+        // TODO: End second exit call
         tracer.stopExitCall(exitCall);
 
         context.fail(e);
@@ -204,13 +204,16 @@ const submitPerson = p => {
 
 const personInfo = () => {
     var timestamp = new Date().getTime();
+    var expireTimestamp = new Date().getTime();
+    expireTimestamp.setHours(expireTimestamp.getHours() + 2);
     var retval = faker.helpers.userCard();
     retval.id = uuidv4();
     retval.submittedAt = timestamp;
     retval.updatedAt = timestamp;
+    retval.expiresAt = expireTimestamp;
 
     return retval;
 };
 
-// Add wrapper for tracer around module.
+// TODO: Add wrapper for tracer around module.
 tracer.mainModule(module);
