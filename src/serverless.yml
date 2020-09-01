@@ -47,6 +47,9 @@ resources:
         StreamSpecification:
           StreamViewType: "NEW_AND_OLD_IMAGES"
         TableName: ${self:provider.environment.CANDIDATE_TABLE}
+        TimeToLiveSpecification:
+          AttributeName: expiresAt
+          Enabled: true
 
 functions:
   lambda-1:
