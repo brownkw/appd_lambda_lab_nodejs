@@ -210,7 +210,7 @@ const personInfo = () => {
     retval.id = uuidv4();
     retval.submittedAt = timestamp;
     retval.updatedAt = timestamp;
-    retval.expiresAt = expireTimestamp.toISOString().slice(0, 19) + 'Z';
+    retval.expiresAt = Math.floor((expireTimestamp.getTime())/1000);
 
     return retval;
 };
