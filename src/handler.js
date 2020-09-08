@@ -163,10 +163,13 @@ const submitPerson = p => {
 
 const personInfo = () => {
     var timestamp = new Date().getTime();
+    var expireTimestamp = new Date();
+    expireTimestamp.setHours(expireTimestamp.getHours() + 2);
     var retval = faker.helpers.userCard();
     retval.id = uuidv4();
     retval.submittedAt = timestamp;
     retval.updatedAt = timestamp;
+    retval.expiresAt = Math.floor((expireTimestamp.getTime())/1000);
 
     return retval;
 };
