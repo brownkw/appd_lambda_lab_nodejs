@@ -2,9 +2,6 @@
 // TODO: Add in call to require AppDynamics Tracer
 const tracer = require('appdynamics-lambda-tracer');
 
-// TODO: init tracer
-tracer.init();
-
 const AWS = require('aws-sdk');
 
 // Other requirements
@@ -214,6 +211,3 @@ const personInfo = () => {
 
     return retval;
 };
-
-// TODO: Add wrapper for tracer around module.
-tracer.mainModule(module);

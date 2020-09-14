@@ -17,7 +17,8 @@ provider:
     APPDYNAMICS_CONTROLLER_HOST: "aws-sandbox.saas.appdynamics.com"
     APPDYNAMICS_SERVERLESS_API_ENDPOINT: "https://pdx-sls-agent-api.saas.appdynamics.com"
     APPDYNAMICS_CONTROLLER_PORT: 443    
-    APPDYNAMICS_LOG_LEVEL: "DEBUG"    
+    APPDYNAMICS_LOG_LEVEL: "DEBUG"   
+    AWS_LAMBDA_EXEC_WRAPPER: "/opt/appdynamics-extension-script" 
 
   iamRoleStatements:
     - Effect: Allow
@@ -43,8 +44,8 @@ resources:
           - AttributeName: "id"
             KeyType: "HASH"
         ProvisionedThroughput:
-          ReadCapacityUnits: 1
-          WriteCapacityUnits: 1
+          ReadCapacityUnits: 5
+          WriteCapacityUnits: 5
         StreamSpecification:
           StreamViewType: "NEW_AND_OLD_IMAGES"
         TableName: ${self:provider.environment.CANDIDATE_TABLE}
@@ -56,6 +57,8 @@ functions:
   lambda-1:
     handler: handler.doFunctionAsync
     description: Sample Lambda function in NodeJS for AppD Lambda Instrumentation
+    layers:
+      - arn:aws:lambda:${opt:region, self:provider.region}:716333212585:layer:appdynamics-lambda-extension:9
     memorySize: 256
     timeout: 30
     environment:
@@ -68,6 +71,8 @@ functions:
   lambda-2:
     handler: handler.doFunctionAsync2
     description: Second sample Lambda function
+    layers:
+      - arn:aws:lambda:${opt:region, self:provider.region}:716333212585:layer:appdynamics-lambda-extension:9
     memorySize: 256
     timeout: 30
     environment:
