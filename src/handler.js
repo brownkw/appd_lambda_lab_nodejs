@@ -1,7 +1,5 @@
 // TODO: Add in call to require AppDynamics Tracer
 
-// TODO: init tracer
-
 const AWS = require('aws-sdk');
 const _ = require('lodash');
 const util = require('util');
@@ -173,6 +171,3 @@ const personInfo = () => {
 
     return retval;
 };
-
-// TODO: Add wrapper for tracer around module.
-    
