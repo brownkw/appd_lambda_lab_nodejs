@@ -1,4 +1,3 @@
-// const secret_mgr = require('./secrets-manager.js');
 // TODO: Add in call to require AppDynamics Tracer
 const tracer = require('appdynamics-lambda-tracer');
 
