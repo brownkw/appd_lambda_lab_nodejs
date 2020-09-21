@@ -1,5 +1,13 @@
 service: appd-lambda-nodejs
 
+plugins:
+  - serverless-stack-output
+
+custom:
+  output:
+    handler: scripts/output.handler
+    file: .build/output.json
+
 provider:
   name: aws
   runtime: nodejs10.x

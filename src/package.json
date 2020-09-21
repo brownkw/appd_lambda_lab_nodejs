@@ -12,6 +12,7 @@
     "aws-sdk": "^2.691.0",
     "faker": "^4.1.0",
     "lodash": "^4.17.15",
+    "serverless-stack-output": "^0.2.3",
     "uuid": "^8.1.0"
   }
 }
