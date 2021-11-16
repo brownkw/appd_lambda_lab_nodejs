@@ -9,7 +9,7 @@
   "author": "Wayne Brown",
   "license": "ISC",
   "dependencies": {
-    "aws-sdk": "^2.691.0",
+    "aws-sdk": "^2.814.0",
     "faker": "^4.1.0",
     "lodash": "^4.17.15",
     "serverless-stack-output": "^0.2.3",
